@@ -2,18 +2,21 @@
 #include <filesystem>
 #include <algorithm>
 #include <fstream>
-#include <lame/lame.h>
 #include <cstring>
 #include <future>
+#include <cstdlib>
 
 using namespace std;
 namespace fs = std::filesystem;
 
 // For correct output to Windows' console
 #if defined(_WIN32)
+using str = std::wstring;
 auto& std_out = std::wcout;
 auto& std_err = std::wcerr;
+#include "lame\lame.h"
 #else
+#include <lame/lame.h>
 auto& std_out = std::cout;
 auto& std_err = std::cerr;
 #endif
@@ -44,7 +47,7 @@ struct wave_header_t {
 #pragma pack(pop)
 
 void print_help(const string& name) {
-    std_out << "Usage: " << name << " <path to WAV files>" << endl;
+    std::cout << "Usage: " << name << " <path to WAV files>" << endl;
     exit(0);
 }
 
@@ -160,11 +163,12 @@ bool process_file(const fs::path& wav_path) {
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 2) { print_help(fs::path(argv[0]).filename()); }
+    // if (argc < 2) { print_help(argv[0]); }
+	if (argc < 2) { print_help(fs::path(argv[0]).filename().string()); }
 
     for(auto& file: fs::directory_iterator(argv[1])) {
 
-        string extension = file.path().extension();
+        string extension = file.path().extension().string();
         transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
         if(fs::is_regular_file(file) && (extension == ".wav")) {
